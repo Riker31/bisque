@@ -200,7 +200,7 @@ export default function Home() {
                         {show.supporting?.length > 0 && (
                           <p className="text-xs text-white/40 truncate">w/ {show.supporting.join(", ")}</p>
                         )}
-                        {show.start_time && (
+                        {show.start_time && show.start_time !== "undefined" && (
                           <p className="text-xs text-white/40 mt-0.5">🕐 {formatTime(show.start_time)}</p>
                         )}
                       </div>
