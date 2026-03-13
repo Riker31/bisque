@@ -16,7 +16,7 @@ interface Event {
   genres: string[];
 }
 
-const BG_IMAGE = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1600&q=80&auto=format&fit=crop";
+const DEFAULT_BG = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1600&q=80&auto=format&fit=crop";
 
 const VENUE_URLS: Record<string, string> = {
   "Great American Music Hall": "https://www.slimspresents.com/venue_detail/gamh/",
@@ -68,6 +68,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [weekFilter, setWeekFilter] = useState<"all" | "this" | "next">("all");
   const [selectedVenue, setSelectedVenue] = useState<string>("all");
+  const [bgImage, setBgImage] = useState(DEFAULT_BG);
+  const [bgArtist, setBgArtist] = useState("");
 
   useEffect(() => {
     if (localStorage.getItem("bisque_authed") === "yes") setAuthed(true);
@@ -82,7 +84,16 @@ export default function Home() {
     try {
       const res = await fetch("/api/events");
       const data = await res.json();
-      setEvents(Array.isArray(data) ? data : []);
+      if (Array.isArray(data)) {
+        setEvents(data);
+        // Pick a random artist with an image for background
+        const withImages = data.filter((e: Event) => e.image_url);
+        if (withImages.length > 0) {
+          const pick = withImages[Math.floor(Math.random() * withImages.length)];
+          setBgImage(pick.image_url!);
+          setBgArtist(pick.artist);
+        }
+      }
     } catch {}
     setLoading(false);
   };
@@ -118,7 +129,7 @@ export default function Home() {
 
   if (!authed) return (
     <div className="min-h-screen flex items-center justify-center p-6"
-      style={{ backgroundImage: `url(${BG_IMAGE})`, backgroundSize: "cover", backgroundPosition: "center" }}>
+      style={{ backgroundImage: `url(${DEFAULT_BG})`, backgroundSize: "cover", backgroundPosition: "center" }}>
       <div className="absolute inset-0 bg-black/60" />
       <div className="relative z-10 text-center">
         <h1 className="text-6xl font-bold text-white mb-2 tracking-tight">Bisque</h1>
@@ -138,16 +149,21 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {/* Hero */}
-      <div className="relative h-56 flex items-end"
-        style={{ backgroundImage: `url(${BG_IMAGE})`, backgroundSize: "cover", backgroundPosition: "center top" }}>
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent" />
-        <div className="relative z-10 px-6 pb-5 w-full flex justify-between items-end">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight">Bisque</h1>
-            <p className="text-white/60 text-sm">Bay Area · small venues · next 2 weeks</p>
+      <div className="relative h-64 flex items-end"
+        style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center top" }}>
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/50 to-transparent" />
+        <div className="relative z-10 px-6 pb-5 w-full">
+          <div className="flex justify-between items-end">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight">Bisque</h1>
+              <p className="text-white/60 text-sm">Bay Area · small venues · next 2 weeks</p>
+            </div>
+            <button onClick={() => { localStorage.removeItem("bisque_authed"); setAuthed(false); }}
+              className="text-white/30 text-sm hover:text-white/60">Logout</button>
           </div>
-          <button onClick={() => { localStorage.removeItem("bisque_authed"); setAuthed(false); }}
-            className="text-white/30 text-sm hover:text-white/60">Logout</button>
+          {bgArtist && (
+            <p className="text-white/30 text-xs mt-2">📸 {bgArtist}</p>
+          )}
         </div>
       </div>
 
