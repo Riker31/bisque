@@ -24,6 +24,8 @@ const SMALL_VENUES = [
   "The New Parish",
   "Moe's Alley",
   "Kuumbwa Jazz Center",
+  "Guild Theatre",
+  "The Guild",
 ];
 
 export interface Event {
